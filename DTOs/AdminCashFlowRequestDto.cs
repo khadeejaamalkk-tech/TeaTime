@@ -1,8 +1,11 @@
-﻿namespace TeaTimeDelivery.DTOs
+﻿using TeaTimeDelivery.Models;
+
+namespace TeaTimeDelivery.DTOs
 {
     public class AdminCashFlowRequestDto
     {
         public DateTime? Date { get; set; }
+        public int? RestaurantId { get; set; }
     }
     public class AdminCashFlowSummaryDto
     {

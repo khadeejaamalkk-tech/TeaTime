@@ -15,12 +15,15 @@ namespace TeaTimeDelivery.Repositories
         }
         public async Task<User> GetUserByUsername(string username)
         {
-            using var connection = _context.CreateConnection();
-            return await connection.QueryFirstOrDefaultAsync<User>(
-                  "sp_GetUserByUsername",
-                  new { Username = username },
-                  commandType: CommandType.StoredProcedure);
+            using (var connection = _context.CreateConnection())
+            {
+                var query = "SELECT * FROM Users WHERE Username = @Username";
 
+                return await connection.QueryFirstOrDefaultAsync<User>(
+                    query,
+                    new { Username = username }
+                );
+            }
         }
         public async Task<IEnumerable<User>> GetAllUsers()
         {
@@ -33,9 +36,12 @@ namespace TeaTimeDelivery.Repositories
         public async Task<User> GetUserById(int id)
         {
             using var connection = _context.CreateConnection();
+
             return await connection.QueryFirstOrDefaultAsync<User>(
                 "sp_GetUserById",
-                commandType: CommandType.StoredProcedure);
+                new { Id = id },   
+                commandType: CommandType.StoredProcedure
+            );
         }
         public async Task CreateUser(User user)
         {

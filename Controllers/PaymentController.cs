@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeaTimeDelivery.DTOs;
 using TeaTimeDelivery.Services;
 
@@ -15,6 +16,7 @@ public class PaymentController : ControllerBase
 
    
     [HttpPost("confirm")]
+    [Authorize]
     public async Task<IActionResult> ConfirmPayment([FromBody] CollectPaymentDto dto)
     {
         if (dto == null)

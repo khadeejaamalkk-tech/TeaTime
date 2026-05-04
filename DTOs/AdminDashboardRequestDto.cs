@@ -3,7 +3,7 @@
     public class AdminDashboardRequestDto
     {
         public DateTime? Date { get; set; }
-        public string? RestaurantName { get; set; }
+        public int? RestaurantId { get; set; }
     }
     public class AdminDashboardSummaryDto
     {

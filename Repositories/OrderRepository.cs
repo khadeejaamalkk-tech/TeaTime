@@ -3,6 +3,7 @@ using System.Data;
 using System.Reflection.Metadata.Ecma335;
 using TeaTimeDelivery.Data;
 using TeaTimeDelivery.DTOs;
+using TeaTimeDelivery.Models;
 
 namespace TeaTimeDelivery.Repositories
 {
@@ -16,7 +17,7 @@ namespace TeaTimeDelivery.Repositories
 
 
 
-        public async Task<int> CreateOrder(CreateOrderDto dto)
+        public async Task<int> CreateOrder(CreateOrderDto dto, int userId)
         {
             using var connection = _context.CreateConnection();
 
@@ -43,6 +44,9 @@ namespace TeaTimeDelivery.Repositories
 
             parameters.Add("@RestaurantId", dto.RestaurantId);
             parameters.Add("@VehicleType", dto.VehicleType);
+
+            
+            parameters.Add("@UserId", userId);
 
             parameters.Add("@Items", table.AsTableValuedParameter("OrderItemType"));
 
@@ -237,7 +241,7 @@ namespace TeaTimeDelivery.Repositories
             var parameters = new DynamicParameters();
             parameters.Add("@FromDate",  dto.FromDate?.ToDateTime(TimeOnly.MinValue));
             parameters.Add("@ToDate", dto.ToDate?.ToDateTime(TimeOnly.MaxValue));
-
+            parameters.Add("@DeliveryPartnerId", dto.DeliveryPartnerId);
             using var multi = await connection.QueryMultipleAsync(
                 "sp_GetSalesDashboard",
                 parameters,
@@ -272,6 +276,7 @@ namespace TeaTimeDelivery.Repositories
             var parameters = new DynamicParameters();
             parameters.Add("@FromDate", dto.FromDate?.ToDateTime(TimeOnly.MinValue));
             parameters.Add("@ToDate", dto.ToDate?.ToDateTime(TimeOnly.MaxValue));
+            parameters.Add("@DeliveryPartnerId", dto.DeliveryPartnerId);
 
             var result = await connection.QueryAsync<CustomerSummaryDto>(
                 "sp_GetCustomerSummary",
@@ -286,6 +291,7 @@ namespace TeaTimeDelivery.Repositories
             using var connection = _context.CreateConnection();
             var parameters = new DynamicParameters();
             parameters.Add("@Date", dto.Date);
+            parameters.Add("@RestaurantId", dto.RestaurantId);
 
             using var multi = await connection.QueryMultipleAsync(
                 "sp_ShopDashboard",
@@ -303,9 +309,11 @@ namespace TeaTimeDelivery.Repositories
         public async Task<ShopCashflowResponsetDto> GetShopCashflow(ShopCashflowRequestDto dto)
         {
             using var connection = _context.CreateConnection();
+
             var parameters = new DynamicParameters();
             parameters.Add("@FromDate", dto.FromDate);
             parameters.Add("@ToDate", dto.ToDate);
+            parameters.Add("@RestaurantId", dto.RestaurantId); 
 
             using var multi = await connection.QueryMultipleAsync(
                 "sp_ShopCashFlow",
@@ -313,6 +321,7 @@ namespace TeaTimeDelivery.Repositories
                 commandType: CommandType.StoredProcedure);
 
             var summary = await multi.ReadFirstOrDefaultAsync<ShopCashSummaryDto>();
+
             var partners = (await multi.ReadAsync<ShopPartnerCashDto>()).ToList();
 
             return new ShopCashflowResponsetDto
@@ -320,7 +329,6 @@ namespace TeaTimeDelivery.Repositories
                 Summary = summary,
                 Partners = partners
             };
-
         }
         public async Task<AdminDashboardResponseDto> GetAdminDashboard(AdminDashboardRequestDto dto)
         {
@@ -328,8 +336,7 @@ namespace TeaTimeDelivery.Repositories
 
             var parameters = new DynamicParameters();
             parameters.Add("@Date", dto.Date);
-            parameters.Add("@RestaurantName", dto.RestaurantName);
-
+            parameters.Add("@RestaurantId", dto.RestaurantId);
             using var multi = await connection.QueryMultipleAsync(
                 "sp_AdminDashboard",
                 parameters,
@@ -351,7 +358,7 @@ namespace TeaTimeDelivery.Repositories
 
             var parameters = new DynamicParameters();
             parameters.Add("@Date", dto.Date);
-            parameters.Add("@RestaurantName", dto.RestaurantName);
+            parameters.Add("@RestaurantId", dto.RestaurantId);
 
             var result = await connection.QueryAsync<AdminOrdersListResponseDto>(
                 "sp_AdminOrdersList",
@@ -367,6 +374,7 @@ namespace TeaTimeDelivery.Repositories
 
             var parameters = new DynamicParameters();
             parameters.Add("@Date", dto.Date);
+            parameters.Add("@RestaurantId", dto.RestaurantId); 
 
             using var multi = await connection.QueryMultipleAsync(
                 "sp_AdminCashFlow",
@@ -375,6 +383,7 @@ namespace TeaTimeDelivery.Repositories
             );
 
             var summary = await multi.ReadFirstOrDefaultAsync<AdminCashFlowSummaryDto>();
+
             var restaurants = (await multi.ReadAsync<RestaurantCashFlowDto>()).ToList();
 
             return new AdminCashFlowResponseDto

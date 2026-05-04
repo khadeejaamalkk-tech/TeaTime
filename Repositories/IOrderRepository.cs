@@ -4,7 +4,7 @@ namespace TeaTimeDelivery.Repositories
 {
     public interface IOrderRepository
     {
-        Task<int> CreateOrder(CreateOrderDto order);
+        Task<int> CreateOrder(CreateOrderDto dto, int userId);
         Task<OrderResponseDto> GetOrderById(int id);
         Task<IEnumerable<OrderResponseDto>> GetAllOrders();
         Task<IEnumerable<OrderResponseDto>> GetOrdersByRestaurant(int restaurantId);

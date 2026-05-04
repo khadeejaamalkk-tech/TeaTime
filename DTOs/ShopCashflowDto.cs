@@ -4,6 +4,7 @@
     {
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
+        public int RestaurantId { get; set; }
     }
     public class ShopCashSummaryDto
     {

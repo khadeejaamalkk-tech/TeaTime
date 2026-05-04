@@ -3,6 +3,7 @@
     public class ShopDashboardRequestDto
     {
         public DateTime Date { get; set; }
+        public int RestaurantId { get; set; }
     }
 
     public class ShopOrderSummaryDto

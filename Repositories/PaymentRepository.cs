@@ -21,7 +21,6 @@ public class PaymentRepository : IPaymentRepository
         parameters.Add("@OrderId", dto.OrderId);
         parameters.Add("@CashAmount", dto.CashAmount);
         parameters.Add("@BankAmount", dto.BankAmount);
-        parameters.Add("@DeliveryPartnerId", dto.DeliveryPartnerId);
 
         var result = await connection.QueryFirstOrDefaultAsync<string>(
             "sp_CollectPayment",

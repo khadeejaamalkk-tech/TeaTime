@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeaTimeDelivery.DTOs;
 using TeaTimeDelivery.Services;
 
@@ -23,6 +24,7 @@ namespace TeaTimeDelivery.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetRestaurantById(int id)
         {
             var response = await _restaurantService.GetRestaurantById(id);
@@ -30,6 +32,7 @@ namespace TeaTimeDelivery.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateRestaurant([FromBody] CreateRestaurantDto dto)
         {
             var response = await _restaurantService.CreateRestaurant(dto);
@@ -37,6 +40,7 @@ namespace TeaTimeDelivery.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateRestaurant(int id, [FromBody] UpdateRestaurantDto dto)
         {
             var response = await _restaurantService.UpdateRestaurant(id, dto);
@@ -44,6 +48,7 @@ namespace TeaTimeDelivery.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteRestaurant(int id)
         {
             var response = await _restaurantService.DeleteRestaurant(id);

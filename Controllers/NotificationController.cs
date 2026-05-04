@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TeaTimeDelivery.Services;
 
 namespace TeaTimeDelivery.Controllers
@@ -14,6 +15,7 @@ namespace TeaTimeDelivery.Controllers
             _notificationService = notificationService;
         }
         [HttpGet("{deliveryPartnerId}")]
+        [Authorize]
         public async Task<IActionResult> GetNotifications(int deliveryPartnerId)
         {
             var result = await _notificationService.GetNotifications(deliveryPartnerId);

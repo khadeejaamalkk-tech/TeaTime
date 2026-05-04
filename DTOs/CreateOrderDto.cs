@@ -12,6 +12,7 @@
         public decimal DeliveryCharge { get; set; }
         public decimal GST { get; set; }
         public decimal Discount { get; set; }
+        
 
         public int RestaurantId { get; set; }
         public string VehicleType { get; set; }

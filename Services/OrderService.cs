@@ -21,17 +21,15 @@ namespace TeaTimeDelivery.Services
             _notificationRepo = notificationRepo;
 
         }
-
-        public async Task<ApiResponse<int>> CreateOrder(CreateOrderDto dto)
+        public async Task<ApiResponse<int>> CreateOrder(CreateOrderDto dto, int userId)
         {
             try
             {
                 if (dto == null || dto.Items == null || !dto.Items.Any())
                     return ApiResponse<int>.BadRequest("Order must contain items");
 
-
-                var orderId = await _repository.CreateOrder(dto);
-
+                
+                var orderId = await _repository.CreateOrder(dto, userId);
 
                 var vehicleType = dto.VehicleType?.Trim().ToLower();
 
@@ -54,6 +52,10 @@ namespace TeaTimeDelivery.Services
                 return ApiResponse<int>.Error(ex.Message);
             }
         }
+
+
+
+
         public async Task<ApiResponse<IEnumerable<OrderResponseDto>>> GetAllOrders()
 
         {
@@ -255,6 +257,7 @@ namespace TeaTimeDelivery.Services
         {
             try
             {
+                
                 if (dto.FromDate.HasValue && dto.ToDate.HasValue && dto.FromDate > dto.ToDate)
                 {
                     return ApiResponse<SalesDashboardResponseDto>
@@ -263,16 +266,30 @@ namespace TeaTimeDelivery.Services
 
                 var result = await _repository.GetSalesDashboard(dto);
 
-                if (result == null || result.CompletedOrders == null || !result.CompletedOrders.Any())
+               
+                if (result == null)
                 {
                     return ApiResponse<SalesDashboardResponseDto>
-                        .SuccessNoData("No sales data found for given date range");
+                        .SuccessNoData("No sales data found");
+                }
+
+               
+                result.CompletedOrders ??= new List<CompletedOrderDto>();
+
+                
+                if (!result.CompletedOrders.Any()
+                    && result.TotalSales == 0
+                    && result.TotalCash == 0
+                    && result.TotalCard == 0)
+                {
+                    return ApiResponse<SalesDashboardResponseDto>
+                        .SuccessNoData("No sales data found for given filters");
                 }
 
                 return ApiResponse<SalesDashboardResponseDto>
                     .Success(result, "Sales dashboard fetched successfully");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return ApiResponse<SalesDashboardResponseDto>
                     .Error("Something went wrong while fetching dashboard");
@@ -282,12 +299,30 @@ namespace TeaTimeDelivery.Services
         {
             try
             {
-                var result = await _repository.GetCustomerSummary(dto);
-
-                if (result == null || !result.Any())
+                
+                if (dto.FromDate.HasValue && dto.ToDate.HasValue && dto.FromDate > dto.ToDate)
                 {
                     return ApiResponse<List<CustomerSummaryDto>>
-                        .SuccessNoData("No customer data found");
+                        .BadRequest("FromDate cannot be greater than ToDate");
+                }
+
+                
+                if (dto.DeliveryPartnerId.HasValue && dto.DeliveryPartnerId <= 0)
+                {
+                    return ApiResponse<List<CustomerSummaryDto>>
+                        .BadRequest("Invalid Delivery Partner Id");
+                }
+
+                var result = await _repository.GetCustomerSummary(dto);
+
+                
+                result ??= new List<CustomerSummaryDto>();
+
+                
+                if (!result.Any())
+                {
+                    return ApiResponse<List<CustomerSummaryDto>>
+                        .SuccessNoData("No customer data found for given filters");
                 }
 
                 return ApiResponse<List<CustomerSummaryDto>>
@@ -304,14 +339,14 @@ namespace TeaTimeDelivery.Services
             try
             {
                 var data = await _repository.GetShopDashboard(dto);
-                return ApiResponse<ShopDashboardResponseDto>.Success(data, "Dashbard fetched successfully");
+
+                return ApiResponse<ShopDashboardResponseDto>
+                    .Success(data, "Dashboard fetched successfully");
             }
             catch (Exception ex)
             {
-                return ApiResponse<ShopDashboardResponseDto>.BadRequest("Database error occurred");
-
-
-                return ApiResponse<ShopDashboardResponseDto>.NotFound("Something went wrong");
+                return ApiResponse<ShopDashboardResponseDto>
+                    .BadRequest($"Database error occurred: {ex.Message}");
             }
         }
         public async Task<ApiResponse<ShopCashflowResponsetDto>> GetShopCashFlow(ShopCashflowRequestDto dto)
@@ -334,6 +369,9 @@ namespace TeaTimeDelivery.Services
         {
             try
             {
+                
+                dto.RestaurantId = dto.RestaurantId == 0 ? null : dto.RestaurantId;
+
                 var result = await _repository.GetAdminDashboard(dto);
 
                 return ApiResponse<AdminDashboardResponseDto>.Success(
@@ -343,9 +381,8 @@ namespace TeaTimeDelivery.Services
             }
             catch (Exception ex)
             {
-                return ApiResponse<AdminDashboardResponseDto>.NotFound(
-                    "Failed to fetch dashboard"
-                    
+                return ApiResponse<AdminDashboardResponseDto>.BadRequest(
+                    $"Failed to fetch dashboard: {ex.Message}"
                 );
             }
         }
@@ -353,6 +390,7 @@ namespace TeaTimeDelivery.Services
         {
             try
             {
+                dto.RestaurantId = dto.RestaurantId == 0 ? null : dto.RestaurantId;
                 var result = await _repository.GetAdminOrdersList(dto);
 
                 if (result == null || !result.Any())
@@ -374,9 +412,11 @@ namespace TeaTimeDelivery.Services
         {
             try
             {
+                dto.RestaurantId = dto.RestaurantId == 0 ? null : dto.RestaurantId;
                 var result = await _repository.GetAdminCashFlow(dto);
 
-                if (result == null)
+                if (result == null ||
+                    (result.Summary == null && (result.Restaurants == null || !result.Restaurants.Any())))
                 {
                     return ApiResponse<AdminCashFlowResponseDto>.NotFound("No data found");
                 }

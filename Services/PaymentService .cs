@@ -24,10 +24,15 @@ public class PaymentService : IPaymentService
 
             var result = await _paymentRepository.CollectPayment(dto);
 
-            if (result == "Already Collected")
-                return ApiResponse<string>.BadRequest(result);
-
-            return ApiResponse<string>.Success("Payment collected successfully");
+            return result switch
+            {
+                "Success" => ApiResponse<string>.Success("Payment collected successfully"),
+                "Already Collected" => ApiResponse<string>.BadRequest(result),
+                "Invalid Order" => ApiResponse<string>.BadRequest(result),
+                "Cash + Bank amount must equal TotalAmount" => ApiResponse<string>.BadRequest(result),
+                "Invalid amount" => ApiResponse<string>.BadRequest(result),
+                _ => ApiResponse<string>.Error(result)
+            };
         }
         catch (Exception ex)
         {

@@ -5,7 +5,7 @@ namespace TeaTimeDelivery.Services
 {
     public interface IOrderService
     {
-        Task<ApiResponse<int>> CreateOrder(CreateOrderDto dto);
+        Task<ApiResponse<int>> CreateOrder(CreateOrderDto dto, int userId);
         Task<ApiResponse<IEnumerable<OrderResponseDto>>> GetAllOrders();
 
         Task<ApiResponse<OrderResponseDto>> GetOrderById(int orderId);
